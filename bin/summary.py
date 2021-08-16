@@ -11,11 +11,7 @@ parser.add_argument('--size', '-s', dest='size', help='insert size of the mate-p
 parser.add_argument('--input_txt', '-in', dest='input_file', help='input align result file')
 parser.add_argument('--output_txt', '-out', dest='output_file', help='output summary file')
 args = parser.parse_args()
-
 insert=int(args.size)
-
-#(both_UM,onlyone_map,map_df,right,map_dev,map_rev,asm0_10,asm10_20,asm20_30,asm30_40,asm40_100,asm100_x)=[0 for x in range(12)]
-
 
 def summary_file(input_file,output_file):
  with open(input_file,'r') as f1:
