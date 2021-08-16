@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# -*- coding:utf-8 -*-
 
 import gzip
 import itertools
@@ -48,4 +49,4 @@ if __name__ == "__main__":
  write_fastq(reads,args.outputfq)
 
 ## simulate.py ##
-# python3 simulate.py -s 80 -e 100 -in my.fastq -out simulate-aDNA.fq
+# python3 simulate.py -s 80 -e 100 -in data.R1.fastq -out simulate-aDNA.fq.gz
