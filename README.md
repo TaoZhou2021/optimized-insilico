@@ -1,8 +1,8 @@
 # optimized-insilico
 
 Dependencies:
-1. pysam 
-2.
+1. pysam ( sam2fq.py)
+2. iterools (simulate.py)
 
 There are three scripts in the optimized-insilico/bin/
 
