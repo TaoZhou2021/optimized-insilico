@@ -1,5 +1,9 @@
 # optimized-insilico
 
+Dependencies:
+1. pysam 
+2.
+
 There are three scripts in the optimized-insilico/bin/
 
 1. {sam2fq.py}    -------------- select the mate-pairs and also filtered mate-pairs(optional)
