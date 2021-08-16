@@ -42,7 +42,7 @@ There are three scripts in the optimized-insilico/bin/
 
  (1) simulate ancient DNA reads (80 to 100 bp long)
  
-  $python3 simulate.py -s 80 -e 100 -in my.fastq -out simulate-aDNA.fq
+  $python3 simulate.py -s 80 -e 100 -in my.fastq -out simulate-aDNA.fq.gz
 
 
 3.{summary.py}
