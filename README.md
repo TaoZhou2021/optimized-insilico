@@ -8,7 +8,8 @@ There are three scripts in the optimized-insilico/bin/
  
 3. {summary.py}   -------------- summary the results of mate-pairs aligned to the reference(select mate-pairs or filtered mate-pairs)
 
-1. {sam2fq.py}
+
+1.{sam2fq.py}
 
 *select mate-pairs without output their align results*                                                                                                                             
 
@@ -30,7 +31,8 @@ There are three scripts in the optimized-insilico/bin/
  
   $python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq -as align_select-500-mp.txt -fs filter-500-mp.sam -f1 filter-500-mp.R1.fq -f2 filter-500-mp.R2.fq -af algin_filter-500-mp.txt
 
-2. {simulate.py}
+
+2.{simulate.py}
 
 *simulate ancient DNA reads*
 
@@ -38,7 +40,8 @@ There are three scripts in the optimized-insilico/bin/
  
   $python3 simulate.py -s 80 -e 100 -in my.fastq -out simulate-aDNA.fq
 
-3. {summary.py}
+
+3.{summary.py}
 
 *summary the align results of mate-pairs*
 
