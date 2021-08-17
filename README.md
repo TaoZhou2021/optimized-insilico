@@ -8,8 +8,8 @@ Dependencies:
 
 Installation
 ---
-```
-git clone https://github.com/TaoZhou2021/optimized-insilico.git `or` git clone git@github.com:TaoZhou2021/optimized-insilico.git
+```shell
+git clone https://github.com/TaoZhou2021/optimized-insilico.git or git clone git@github.com:TaoZhou2021/optimized-insilico.git
 ```    
 
 There are three scripts in the optimized-insilico/bin/
