@@ -1,5 +1,5 @@
-# optimized-insilico
-======
+optimized-insilico
+===
 
 #Dependencies:
 1. pysam ( sam2fq.py)
@@ -19,12 +19,10 @@
 *select mate-pairs without output their align results*                                                                                                                             
 
  (1) only select mate-pairs:  
-
-  $python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq  
+ $python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq  
 
  (2) select mate-pairs and also output of filtered mate-pairs without their align results: 
-
-  $python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq -fs filter-500-mp.sam -f1 filter-500-mp.R1.fq -f2 filter-500-mp.R2.fq
+ $python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq -fs filter-500-mp.sam -f1 filter-500-mp.R1.fq -f2 filter-500-mp.R2.fq
 
 *select mate-paris with output their align results*
 
