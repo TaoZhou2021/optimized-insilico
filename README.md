@@ -22,10 +22,8 @@ There are three scripts in the optimized-insilico/bin/
 
 Getting Started
 ---
-1.{sam2fq.py}
 
-*select mate-pairs without output their align results*                                                                                                                             
-
+**select mate-pairs without output their align results**                                                                                                                             
  (1) only select mate-pairs:    
 ``` 
 python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq  
@@ -33,8 +31,9 @@ python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.s
  (2) select mate-pairs and also output of filtered mate-pairs without their align results:    
 ```
 python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq -fs filter-500-mp.sam -f1 filter-500-mp.R1.fq -f2 filter-500-mp.R2.fq
+
 ```
-*select mate-paris with output their align results*
+**select mate-paris with output their align results**
 
  (1) only select mate-pairs and its summary file:     
 ```
@@ -45,18 +44,14 @@ python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.s
 python3 sam2fq.py -s 500 -dev 0.2 -length 100 -in 500-mp.sam -ss select-500-mp.sam -out1 select-500-mp.R1.fq -out2 select-500-mp.R2.fq -as align_select-500-mp.txt -fs filter-500-mp.sam -f1 filter-500-mp.R1.fq -f2 filter-500-mp.R2.fq -af algin_filter-500-mp.txt
 ```
 
-2.{simulate.py}
-
-*simulate ancient DNA reads*
+**simulate ancient DNA reads**
 
  (1) simulate ancient DNA reads (80 to 100 bp long)
 ``` 
 python3 simulate.py -s 80 -e 100 -in my.fastq -out simulate-aDNA.fq.gz
 ```
 
-3.{summary.py}
-
-*summary the align results of mate-pairs*
+**summary the align results of mate-pairs**
 
  (1) summary the align results of selected mate-pairs
 ```
