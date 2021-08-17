@@ -14,11 +14,9 @@ git clone https://github.com/TaoZhou2021/optimized-insilico.git or git clone git
 
 There are three scripts in the optimized-insilico/bin/
 ---
-1. {sam2fq.py}    -------------- select the mate-pairs and also filtered mate-pairs(optional)
-
-2. {simulate.py}  -------------- simulate the ancient DNA reads using one strand of paired-end reads
- 
-3. {summary.py}   -------------- summary the results of mate-pairs aligned to the reference(select mate-pairs or filtered mate-pairs)
+* {sam2fq.py}    -------------- select the mate-pairs and also filtered mate-pairs(optional)
+* {simulate.py}  -------------- simulate the ancient DNA reads using one strand of paired-end reads
+* {summary.py}   -------------- summary the results of mate-pairs aligned to the reference(select mate-pairs or filtered mate-pairs)
 
 Getting Started
 ---
