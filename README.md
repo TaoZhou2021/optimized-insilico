@@ -20,7 +20,8 @@ There are three scripts in the optimized-insilico/bin/
  
 3. {summary.py}   -------------- summary the results of mate-pairs aligned to the reference(select mate-pairs or filtered mate-pairs)
 
-
+Getting Started
+---
 1.{sam2fq.py}
 
 *select mate-pairs without output their align results*                                                                                                                             
