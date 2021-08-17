@@ -1,10 +1,10 @@
 # optimized-insilico
 
-Dependencies:
+#Dependencies:
 1. pysam ( sam2fq.py)
 2. itertools (simulate.py)
 
-There are three scripts in the optimized-insilico/bin/
+#There are three scripts in the optimized-insilico/bin/
 
 1. {sam2fq.py}    -------------- select the mate-pairs and also filtered mate-pairs(optional)
 
