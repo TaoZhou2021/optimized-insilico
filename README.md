@@ -3,8 +3,8 @@ optimized-insilico
 
 Dependencies:    
 ---
-1. pysam ( sam2fq.py)
-2. itertools (simulate.py)
+* [pysam](https://pysam.readthedocs.io/en/latest/installation.html)
+* [itertools](https://docs.python.org/3/library/itertools.html)
 
 Installation
 ---
