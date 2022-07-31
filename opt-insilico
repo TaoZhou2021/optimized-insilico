@@ -48,8 +48,6 @@ BUSCODATASET='path/to/busco_datasets'
 TRIMMED='trimmed'
 QUASTFOLDER='QUAST_evaluation'
 BUSCOFOLDER='BUSCO_evaluation'
-FASTQ1='test_1.fq'
-FASTQ2='test_2.fq'
 MPTHRESH=1000
 MODE="mp"
 GZIP=0
@@ -106,7 +104,7 @@ scaffold_folder="scaffolds"
 
 function rmdup(){
     echo -e "1...remove duplicates"
-    echo -e "==================="
+    echo -e "====================="
     mkdir -p $OUT/$folder1/rmdup
     if [ -z "$FASTQ2" ];then
         seqkit rmdup $inputfq1 -s > $OUT/$folder1/rmdup/${FASTQ1%_*}-rmdup.fq
@@ -198,7 +196,7 @@ cross_mates(){
 #select conserved in silico mate-pairs
 optimized_insilico(){
     echo "5...selecting conserved in silico mate-pair"
-    echo "=========================================="
+    echo "==========================================="
     mkdir -p $OUT/$folder5
     local IFS=",";
     path="$OUT/$folder5"
@@ -231,11 +229,11 @@ evaluation(){
 }
 
 rmdup
-trim $TRIMMED $FASTQ1 $FASTQ2
-write_config $LENGTH $INSERTS $OUT $CONFIGFILE
-assemble2contigs $CONFIGFILE $KMER $GENOMESIZE $THREADS $PREFIX
-best_reference $PREFIX $REF
-cross_mates $COVERAGE $LENGTH $THREADS $INSERTS $FASTQ1 $FASTQ2
-optimized_insilico $PREFIX $INSERTS 
-contigs2scaffold $PREFIX $THREADS $CONFIGFILE $KMER
-evaluation $THREADS $BESTREF $QUASTFOLDER $PREFIX $BUSCODATASETS $BUSCOFOLDER
+trim
+write_config
+assemble2contigs
+best_reference
+cross_mates
+optimized_insilico
+contigs2scaffold
+evaluation
