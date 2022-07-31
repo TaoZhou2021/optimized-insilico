@@ -9,8 +9,8 @@ cat <<EOF
 Usage:
   opt-insilico REF1.fa,REF2.fa,REF3.fa TARGET-READS_1.fq [TARGET-READS_2.fq]
 
-Generate in-silico mate-pair (and paired-end) libraries for super-scaffolding
-from target genome reads and the suitable reference from multiple references.
+Generate in-silico mate-pair (and paired-end) libraries and select conserved 
+in silico mate-pair for super-scaffolding from target genome reads
   -o   output directory [$OUT]
   -t   number of threads / parallel processes [$THREADS]
   -i   insert sizes, defaults: [$INSERTS]
@@ -96,48 +96,46 @@ folder1="1-preprocess"
 folder2="2-SOAPdenovo_no_insilico"
 folder3="3-best_ref"
 folder4="4-crossmates"
-folder5="5-evaluation"
-folder6="6-SOAPdenovo_optimized_insilico"
+folder5="5-optimized_insilico"
+folder6="6-soapdenovo_optimized_insilico"
+folder7="7-evaluation"
 contig_folder="contigs"
 scaffold_folder="scaffolds"
 
 #remove duplicates and trim adaptor,low-quality bases
 
-function preprocess(){
-    echo -e "\n1.remove duplicates"
+function rmdup(){
+    echo -e "1...remove duplicates"
     echo -e "==================="
-    mkdir -p $OUT/$folder1
-    #inputfq1="$1"
-    if [ -z "$2" ];then
-        seqkit rmdup $inputfq1 -s > $OUT/$folder1/${1%_*}-rmdup.fq
+    mkdir -p $OUT/$folder1/rmdup
+    if [ -z "$FASTQ2" ];then
+        seqkit rmdup $inputfq1 -s > $OUT/$folder1/rmdup/${FASTQ1%_*}-rmdup.fq
     else
-        prinseq.pl -fastq $1 -fastq2 $2 -derep 14 -verbose -out_good  $OUT/$folder1/${1%_*} -out_bad $OUT/$folder1/bad -no_qual_header
-        echo -e "\n2.trim adaptor and low-quality bases"
-        echo -e "===================================="
-        trim_galore --phred33 -o $OUT/$folder1/$3 --paired $OUT/$folder1/${1%.*}.fastq $OUT/$folder1/${2%.*}.fastq
+        prinseq.pl -fastq $FASTQ1 -fastq2 $FASTQ2 -derep 14 -verbose -out_good  $OUT/$folder1/rmdup/${FASTQ1%_*} -out_bad null -no_qual_header
     fi
 }
 
 #trimming reads using trim_galore
-
 trim(){
-    echo "2...trim adaptor and low-quality bases"
-    if [ -n "$3" ];then 
-        #inputfq2="$3"
-        trim_galore --phred33 -o $OUT/$folder1/$1 --paired $folder1/${2%.*}-rmdup.fq $folder1/${3%.*}-rmdup.fq 
+    echo -e "\n2...trim adaptor and low-quality bases"
+    echo -e "======================================"
+    if [ -n "$FASTQ2" ];then 
+        trim_galore --phred33 -o $OUT/$folder1/$TRIMMED --paired $folder1/rmdup/${FASTQ1%.*}-rmdup.fq $folder1/rmdup/${FASTQ2%.*}-rmdup.fq
+    else
+        trim_galore --phred33 -o $OUT/$folder1/$TRIMMED $folder1/rmdup/${FASTQ1%.*}-rmdup.fq
     fi
 }
 
-#assemble reads to contigs/scaffolds
+#write soapdenovo2 config 
 write_config(){
     echo -e "\n3.1...write config file for SOAPdenovo"
     echo -e "======================================" 
     mkdir -p $OUT/$folder2
-    echo -e "max_rd_len=$1"> $OUT/$folder2/${4%.*}-1.cfg
-    echo -e "max_rd_len=$1"> $OUT/$folder2/${4%.*}-2.cfg
+    echo -e "max_rd_len=$LENGTH"> $OUT/$folder2/${CONFIGFILE%.*}-1.cfg
+    echo -e "max_rd_len=$LENGTH"> $OUT/$folder2/${CONFIGFILE%.*}-2.cfg
     local IFS=",";
     local RANK=0
-    for i in $2;do
+    for i in $INSERTS;do
         RANK=$(($RANK+1));
         [ $i -lt $MPTHRESH ] && MODE=pe || MODE=mp;
         [ $i -lt $MPTHRESH ] && REV=0 || REV=1;
@@ -146,36 +144,33 @@ write_config(){
             r1=$OUT/$folder1/$TRIMMED/${FASTQ1%.*}.fq
             r2=$OUT/$folder1/$TRIMMED/${FASTQ2%.*}.fq
             if [ -z $r2 ];then
-                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=3\nrank=$RANK\nq1=$r1\nq2=$r2">>$OUT/$folder2/${4%.*}-1.cfg
-                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=1\nrank=$RANK\nq1=$r1\nq2=$r2">>$OUT/$folder2/${4%.*}-2.cfg
+                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=3\nrank=$RANK\nq1=$r1\nq2=$r2">>$OUT/$folder2/${CONFIGFILE%.*}-1.cfg
+                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=1\nrank=$RANK\nq1=$r1\nq2=$r2">>$OUT/$folder2/${CONFIGFILE%.*}-2.cfg
             else
-                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=3\nrank=$RANK\nq1=$r1">>$OUT/$folder2/${4%.*}-1.cfg
-                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=1\nrank=$RANK\nq1=$r1">>$OUT/$folder2/${4%.*}-2.cfg
+                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=3\nrank=$RANK\nq1=$r1">>$OUT/$folder2/${CONFIGFILE%.*}-1.cfg
+                echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=1\nrank=$RANK\nq1=$r1">>$OUT/$folder2/${CONFIGFILE%.*}-2.cfg
             fi  
         else
-            R1=$OUT/$folder4/"$PRE-$MODE-$i""_1""$SUF";
-            R2=$OUT/$folder4/"$PRE-$MODE-$i""_2""$SUF";
-            echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=2\nrank=$RANK\nq1=$R1\nq2=$R2">>$OUT/$folder2/${4%.*}-2.cfg
+            R1=$OUT/$folder6/"$PRE-$MODE-$i""_1""$SUF";
+            R2=$OUT/$folder6/"$PRE-$MODE-$i""_2""$SUF";
+            echo -e "\n[LIB]\navg_ins=$i\nreverse_seq=$REV\nasm_flags=2\nrank=$RANK\nq1=$R1\nq2=$R2">>$OUT/$folder2/${CONFIGFILE%.*}-2.cfg
         fi
     done;
     echo -e "already write the config files "
 }
 
+#assemble without insilico mate-pairs
 assemble2contigs(){
     echo -e "\n3.2...assemble reads to contigs/scaffolds"
     echo -e "========================================="
-    config="$1"
-    kmer="$2"
-    genome_size="$3"
-    thread="$4"
-    prefix="$5"
+    
     mkdir -p $OUT/$folder2/$contig_folder
     mkdir -p $OUT/$folder2/$scaffold_folder
-    SOAPdenovo-63mer sparse_pregraph -g 15 -d 4 -e 4 -R -r 0 -s $OUT/$folder2/${config%.*}-1.cfg -K $kmer -z $genome_size -p $thread -o $OUT/$folder2/$contig_folder/$prefix
-    SOAPdenovo-63mer contig -g $OUT/$folder2/$contig_folder/$prefix -M 1 -p $thread
-    cp $OUT/$folder2/$contig_folder/$prefix* $OUT/$folder2/$scaffold_folder
-    SOAPdenovo-63mer map -s $OUT/$folder2/${config%.*}-1.cfg -K $kmer -p $thread -g $OUT/$folder2/$scaffold_folder/$prefix
-    SOAPdenovo-63mer scaff -p $thread -g $OUT/$folder2/$scaffold_folder/$prefix
+    SOAPdenovo-63mer sparse_pregraph -g 15 -d 4 -e 4 -R -r 0 -s $OUT/$folder2/${CONFIGFILE%.*}-1.cfg -K $KMER -z $GENOMESIZE -p $THREADS -o $OUT/$folder2/$contig_folder/$PREFIX
+    SOAPdenovo-63mer contig -g $OUT/$folder2/$contig_folder/$PREFIX -M 1 -p $THREADS
+    cp $OUT/$folder2/$contig_folder/$PREFIX* $OUT/$folder2/$scaffold_folder
+    SOAPdenovo-63mer map -s $OUT/$folder2/${CONFIGFILE%.*}-1.cfg -K $KMER -p $THREADS -g $OUT/$folder2/$scaffold_folder/$PREFIX
+    SOAPdenovo-63mer scaff -p $THREADS -g $OUT/$folder2/$scaffold_folder/$PREFIX
 }
 
 #choose the "best" reference to generate insilico mate-pairs
@@ -183,71 +178,64 @@ best_reference(){
     echo -e "\n4.1 find "best" reference from multiple references"
     echo -e "=================================================="
     mkdir -p $OUT/$folder3
-    #prefix="$1";ref="$2";
-    #coverage="$3";length="$4";thread="$5";insert="$6";fastq1="$7";fastq2="$8"
-    #local IFS=",";
+    local IFS=",";
     for i in $2;do
-        unimap -cxasm20 -t 20 $i $OUT/$folder2/$scaffold_folder/$1"".scafSeq > $OUT/$folder3/$1-$i"".unimap  
+        unimap -cxasm20 -t 20 $i $OUT/$folder2/$scaffold_folder/$PREFIX.scafSeq > $OUT/$folder3/$PREFIX-$i.unimap  
     done;
     opt-insilico.py -s compare_ref -input_folder $OUT/$folder3/ -suf unimap -output $OUT/$folder3/best_ref.txt
-    species=$(sed -n "2,1p" $OUT/$folder3/best_ref.txt | awk '{print $1}')
-    unimap_file="genome-$species"".unimap"
-    #unimap_file="genome-takifugu_flavidus.fa.masked.unimap"
-    opt-insilico.py -s paf2list -uf $OUT/$folder3/$unimap_file
-    opt-insilico.py -s get_length -uf $OUT/$folder3/$unimap_file -output $OUT/$folder3/length-flavidus.txt
-    opt-insilico.py -s get_fa -fa $OUT/$folder2/$scaffold_folder/$1"".scafSeq -input1 $OUT/$folder3/length.txt -output $OUT/$folder3/${species%%.}-cns.fa
 }
 
-get_consensus(){
-    echo -e "\n4.2 get consensus from multiple references"
-    echo -e "=================================================="
-    mkdir -p $OUT/
-    unimap -cxasm20 -t 20 $i $OUT/$folder2/$scaffold_folder/$1"".scafSeq > $OUT/$folder3/$1-$i"".unimap
-}
-
+#generate in silico mate-pairs using original pipeline
 cross_mates(){
     best_ref=$(sed -n "2,1p" $OUT/$folder3/best_ref.txt | awk '{print $1}')
     cat $OUT/$folder3/best_ref.txt | while read line; do echo $line; done;
     mkdir -p $OUT/$folder4
     echo -e "\n4.2 generating mate-pairs from the "best" references"
-    echo -e "=================================================="    
+    echo -e  "===================================================="    
     cross-mates -c $1 -l $2 -t $3 -i $4 -o $OUT/$folder4 $best_ref $OUT/$folder1/$TRIMMED/${5%.*}""_val_1.fq $OUT/$folder1/$TRIMMED/${6%.*}""_val_2.fq
 }
 
-cross_mates2(){   
-    echo -e "\n4.2 generating mate-pairs from the "best" references2"
-    echo -e "=================================================="
-    fasta=$(ls $OUT/$folder3/*-cns.fa)
-    mkdir -p $OUT/$folder6
+#select conserved in silico mate-pairs
+optimized_insilico(){
+    echo "5...selecting conserved in silico mate-pair"
+    echo "=========================================="
+    mkdir -p $OUT/$folder5
     local IFS=",";
-    for i in $1;do
+    path="$OUT/$folder5"
+    bwa index $OUT/$folder2/$scaffold_folder/$3.scafSeq
+    for i in $REF;do
         [ $i -lt $MPTHRESH ] && MODE=pe || MODE=mp;
-        seq-frag $MODE -p -s -i $i -N 0 -l $2 -c $3 <$fasta | interleaved-split 1>$OUT/$folder4/$PRE-$MODE-$i""_1.fq 2>$OUT/$folder4/$PRE-$MODE-$i""_2.fq 
-    done;
-}
+        bwa mem -t $1 $OUT/$folder2/$scaffold_folder/${PREFIX}.scafSeq $OUT/$folder4/$PRE-$MODE-$i""_1.fq $OUT/$folder4/$PRE-$MODE-$i""_2.fq -o $path/$i.sam
+        opt-insilico.py -s select -ms $i -length $LENGTH -in $path/$i.sam -fa $OUT/$folder2/$scaffold_folder/$1"".scafSeq -out1 $path/$PRE-$MODE-$i""_R1.fq -out2 $path/PRE-$MODE-$i""_R2.fq     
+    done
+}   
 
-#improve the assembly using generated insilico mate-pairs
+#improve the assembly using optimized insilico mate-pairs
 contigs2scaffold(){
-    echo "5...assemble the contigs to scaffolds"
-    #prefix="$1";thread="$2";config="$3";kmer="$4"    
-    cp $OUT/$folder2/$contig_folder/$1* $OUT/$folder6
-    SOAPdenovo-63mer map -g $OUT/$folder6/$1 -p $2 -s $OUT/$folder2/${3%.*}-2.cfg -K $4
-    SOAPdenovo-63mer scaff -g $OUT/$folder6/$1 -p $2
+    echo "6...assemble the contigs to scaffolds"
+    mkdir -p $OUT/$folder6
+    cp $OUT/$folder2/$contig_folder/$PREFIX* $OUT/$folder6
+    SOAPdenovo-63mer map -g $OUT/$folder6/$PREFIX -p $THREADS -s $OUT/$folder2/${CONFIGFILE%.*}-2.cfg -K $KMER
+    SOAPdenovo-63mer scaff -g $OUT/$folder6/$PREFIX -p $THREADS 
 }
 
-#evaluate the assembly using quast,busco
+#evaluate the assembly using quast
 evaluation(){
-    echo "6...evaluate the assembly using quast/busco"
+    echo "7...evaluate the assembly using quast"
+    mkdir -p $OUT/$folder7
+    cp $OUT/$folder2/$scaffold_folder/$PREFIX.scafSeq $OUT/$folder7/no_insilico.fa
+    cp $OUT/$folder6/$PREFIX.scafSeq $OUT/$folder7/optimized_insilico.fa
     thread="$1";bestref="$2";quast_folder="$3";prefix="$4";busco_dataset="$5";busco_folder="$6"
-    quast.py -t $1 -R $2 -o $3 $4
-    busco -i genome.scafSeq -l $5 -o $6 -m genome --cpu 15
+    cd $OUT/$folder7
+    quast.py -t $THREADS -R $REFTARGET -o $QUASTFOLDER no_insilico.fa optimized_insilico.fa
 }
 
-preprocess $FASTQ1 $FASTQ2 $TRIMMED
+rmdup
+trim $TRIMMED $FASTQ1 $FASTQ2
 write_config $LENGTH $INSERTS $OUT $CONFIGFILE
 assemble2contigs $CONFIGFILE $KMER $GENOMESIZE $THREADS $PREFIX
 best_reference $PREFIX $REF
 cross_mates $COVERAGE $LENGTH $THREADS $INSERTS $FASTQ1 $FASTQ2
-#cross_mates2 $INSERTS $LENGTH $COVERAGE
+optimized_insilico $PREFIX $INSERTS 
 contigs2scaffold $PREFIX $THREADS $CONFIGFILE $KMER
 evaluation $THREADS $BESTREF $QUASTFOLDER $PREFIX $BUSCODATASETS $BUSCOFOLDER
